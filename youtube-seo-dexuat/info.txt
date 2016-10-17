@@ -1,0 +1,12 @@
+username = mrtamb9@gmail.com
+password = Tambk1209
+min_time_second = 5
+max_time_second = 10
+num_iteration = 10
+num_times_comment = 3
+
+Trong đó:
+- min_time_second là số giây xem bé nhất
+- max_time_sencond là số giây xem lớn nhất
+- number_iteration là số lần lặp hết một vòng
+- num_times_comment là số lần muốn comment vào mỗi video
