@@ -1,5 +1,11 @@
 package utils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
@@ -35,8 +41,26 @@ public class Utils {
 		return result;
 	}
 	
-	public static void main(String [] args)
+	public static String getIp() throws Exception {
+        URL whatismyip = new URL("http://checkip.amazonaws.com");
+        BufferedReader in = null;
+        try {
+            in = new BufferedReader(new InputStreamReader(whatismyip.openStream()));
+            String ip = in.readLine();
+            return ip;
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+	
+	public static void main(String [] args) throws Exception
 	{
-		System.out.println(getListRandomNumbers(2, 6));
+		System.out.println(getIp());;
 	}
 }
