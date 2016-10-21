@@ -3,9 +3,7 @@ package utils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
@@ -61,6 +59,6 @@ public class Utils {
 	
 	public static void main(String [] args) throws Exception
 	{
-		System.out.println(getIp());;
+		System.out.println(getRandomNumber(0, 1));
 	}
 }

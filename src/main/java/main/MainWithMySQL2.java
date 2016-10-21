@@ -1,0 +1,275 @@
+package main;
+
+import java.awt.AWTException;
+import java.io.File;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Set;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import controls.MyControls;
+import parameter.Parameters;
+import utils.Utils;
+
+public class MainWithMySQL2 {
+	
+	final int max_comments = 0;
+	HashMap<String, Integer> mapLimitComments = new HashMap<>();
+	
+	WebDriver driver;
+	WebDriverWait wait;
+	
+	int num_video_target = 0;
+	int num_video_other = 0;
+
+	Parameters parameters;
+	MyControls myLogs;
+	
+	static public DateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss dd-MM-yyyy");
+	int iter = 0;
+	
+	public MainWithMySQL2()
+	{
+		parameters = new Parameters();
+		myLogs = new MyControls();
+	}
+	
+	public MainWithMySQL2(String myIp)
+	{
+		parameters = new Parameters(myIp);
+		myLogs = new MyControls(myIp);
+	}
+	
+	// login _youtube
+	void login()
+	{
+		driver.get("https://accounts.google.com/ServiceLogin?passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26feature%3Dsign_in_button%26next%3D%252F%26hl%3Den&service=youtube&uilel=3&hl=en#identifier");
+		driver.findElement(By.id("Email")).sendKeys(parameters.username);
+		driver.findElement(By.id("next")).click();
+		
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Passwd")));
+
+		driver.findElement(By.id("Passwd")).sendKeys(parameters.password);
+		driver.findElement(By.id("signIn")).click();
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("masthead-positioner")));
+		
+		System.out.println("Login success! " + parameters.username);
+	}
+	
+	// change language --> English (in case it was not in English)
+	void changeLanguage() throws InterruptedException
+	{
+		driver.get("https://www.youtube.com/my_videos?o=U");
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("yt-picker-language-button")));
+		Thread.sleep(1000);
+		System.out.println(1);
+		driver.findElement(By.id("yt-picker-language-button")).click();
+		System.out.println(2);
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//strong[@class=\"yt-picker-item\"]")));
+		System.out.println(3);
+		System.out.println(driver.findElement(By.xpath("//strong[@class=\"yt-picker-item\"]")).getText());
+		Thread.sleep(1000);
+		if(driver.findElement(By.xpath("//strong[@class=\"yt-picker-item\"]")).getText().compareTo("English (US)")!=0)
+		{
+			driver.findElement(By.xpath("//button[@value=\"en\"]")).click();
+		}
+		// wait until change done
+		while(true)
+		{
+			System.out.println("Wait until change to English done....");
+			if(driver.findElement(By.xpath("//link[@rel=\"search\"]")).getAttribute("href").toString().contains("locale=en_US"))
+			{
+				break;
+			}
+			Thread.sleep(500);
+		}
+		
+		System.out.println("Change language done! English!");
+	}
+	
+	// change location --> US (in case it was not in US)
+	void changeLocation() throws InterruptedException
+	{
+		driver.get("https://www.youtube.com/?persist_gl=1&gl=US");
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("masthead-positioner")));
+		System.out.println("Change location done! United States!");
+	}
+	
+	void init_main() throws InterruptedException, AWTException, IOException
+	{
+		System.setProperty("webdriver.chrome.driver", Parameters.file_driver);
+		ChromeOptions options = new ChromeOptions();
+        options.addExtensions(new File("geckodriver/extension.crx"));
+		driver = new ChromeDriver(options);
+		wait = new WebDriverWait(driver, 100);
+
+		// login _youtube
+		login();
+		
+		// close extension windows
+		String base = driver.getWindowHandle();
+	    Set<String> set = driver.getWindowHandles();
+	    set.remove(base);
+	    assert set.size()==1;
+	    driver.switchTo().window((String) set.toArray()[0]);
+	    driver.close();
+	    driver.switchTo().window(base);
+	    
+	    // change location
+	    // changeLocation();
+	    
+	    System.out.println("Done init!");
+	}
+	
+	void watchVideo(String url) throws InterruptedException
+	{
+		System.out.println(url);
+		driver.get(url);
+		
+		JavascriptExecutor jse = (JavascriptExecutor) driver;
+	    jse.executeScript("window.scrollBy(0,250)", "");
+	    
+	    int watch_time = Utils.getRandomNumber(parameters.min_time_second, parameters.max_time_second);
+		System.out.println("watch_time = " + watch_time + "(s)");
+		
+		String log = simpleDateFormat.format(new Date()) + " loop " + (iter + 1) + " watching " + url + " time " + watch_time + "(s)";
+		try {
+			myLogs.saveLog(log);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		watch_time = watch_time * 1000;
+		Thread.sleep(watch_time);
+
+		if(driver.findElements(By.xpath("//*[@id=\"watch8-sentiment-actions\"]/span/span[1]/button")).size()>0)
+		{
+			if(!driver.findElement(By.xpath("//*[@id=\"watch8-sentiment-actions\"]/span/span[1]/button")).getAttribute("class").contains("hid yt-uix-tooltip"))
+			{
+				System.out.println("Action like");
+				driver.findElement(By.xpath("//*[@id=\"watch8-sentiment-actions\"]/span/span[1]/button")).click();
+			}
+		}
+
+		// check_comment
+		boolean checkComment = false;
+		if(!mapLimitComments.containsKey(url))
+		{
+			int temp = Utils.getRandomNumber(0, 1);
+			if(temp==1)
+			{
+				checkComment = true;
+				mapLimitComments.put(url, 1);
+			}
+		} else if(mapLimitComments.get(url)<max_comments)
+		{
+			int temp = Utils.getRandomNumber(0, 1);
+			if(temp==1)
+			{
+				checkComment = true;
+				mapLimitComments.put(url, mapLimitComments.get(url) + 1);
+			}
+		}
+		if(checkComment && driver.findElements(By.className("comment-simplebox-renderer-collapsed-content")).size()>0)
+		{
+			driver.findElement(By.className("comment-simplebox-renderer-collapsed-content")).click();
+			
+			while(!driver.findElement(By.xpath("//*[@id=\"comment-simplebox\"]/div[2]/div[2]")).isDisplayed())
+			{
+				System.out.println("waiting comment ...");
+				Thread.sleep(1000);
+			}
+			int index = Utils.getRandomNumber(0, parameters.listComments.size()-1);
+			String comment = parameters.listComments.get(index);
+			System.out.println("comment: " + comment);
+			driver.findElement(By.xpath("//*[@id=\"comment-simplebox\"]/div[2]/div[2]")).sendKeys(comment);
+			while(!driver.findElement(By.xpath("//*[@id=\"comment-simplebox\"]/div[3]/div[2]/button[2]")).isDisplayed())
+			{
+				System.out.println("waiting submit comment ...");
+				Thread.sleep(1000);
+			}
+			driver.findElement(By.xpath("//*[@id=\"comment-simplebox\"]/div[3]/div[2]/button[2]")).click();
+			while(driver.findElements(By.xpath("//*[@id=\"comment-simplebox\"]/div[2]/div[2]")).size()>0)
+			{
+				System.out.println("waiting submit done ...");
+				Thread.sleep(1000);
+			}
+		}
+		
+		Thread.sleep(2000);
+	}
+	
+	void startMain() throws Exception
+	{
+		init_main();
+		
+		String targetVideo = parameters.listTargetVideos.get(0);
+		int sizeOtherVideo = parameters.listOtherVideos.size();
+
+		int times = 0;
+		iter = 0;
+		while(true)
+	    {
+			System.out.println("Repeat: " + (++times));
+			
+	    	ArrayList<Integer> listIndexs = Utils.getListRandomNumbers(sizeOtherVideo, sizeOtherVideo);
+	    	for(int i=0; i<listIndexs.size(); i++)
+	    	{
+	    		int index = listIndexs.get(i);
+	    		String otherVideo = parameters.listOtherVideos.get(index);
+	    		
+	    		watchVideo(otherVideo);
+	    		if(myLogs.checkStop()==true)
+	    		{
+	    			break;
+	    		}
+	    		
+	    		watchVideo(targetVideo);
+	    		if(myLogs.checkStop()==true)
+	    		{
+	    			break;
+	    		}
+	    	}
+	    	
+	    	iter++;
+	    	System.out.println();
+	    	
+	    	// check status
+	    	if(myLogs.checkStop()==true)
+	    	{
+	    		driver.close();
+	    		System.out.println("Success!");
+	    		myLogs.saveLog("Success!");
+	    		myLogs.setStatus(0);
+	    		break;
+	    	}
+	    }
+	}
+	
+	public static void main(String [] args) throws Exception
+	{
+		while(true)
+		{
+			MainWithMySQL2 mainObject = new MainWithMySQL2("0.0.0.0");
+			if(mainObject.parameters.username.length()>0)
+			{
+				mainObject.startMain();
+			}
+			
+			System.out.println("waiting 10s util status = 1");
+			Thread.sleep(10000);
+			mainObject.myLogs.saveLog(simpleDateFormat.format(new Date()) + " waiting...");
+		}
+	}
+}
