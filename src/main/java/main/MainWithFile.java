@@ -22,7 +22,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import parameter.Parameters;
 import utils.Utils;
 
-public class Main {
+public class MainWithFile {
 	
 	static String file_info = "info.txt";
 	static String username = "mrtamb9@gmail.com";

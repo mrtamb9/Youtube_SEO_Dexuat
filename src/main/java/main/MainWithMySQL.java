@@ -7,6 +7,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Set;
 
 import org.openqa.selenium.By;
@@ -17,11 +18,14 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import controls.MyControls;
+import controls.LocalControls;
 import parameter.Parameters;
 import utils.Utils;
 
 public class MainWithMySQL {
+	
+	final int max_comments = 0;
+	HashMap<String, Integer> mapLimitComments = new HashMap<>();
 	
 	WebDriver driver;
 	WebDriverWait wait;
@@ -29,10 +33,8 @@ public class MainWithMySQL {
 	int num_video_target = 0;
 	int num_video_other = 0;
 
-	boolean checkComment = false;
-	
 	Parameters parameters;
-	MyControls myLogs;
+	LocalControls myLogs;
 	
 	static public DateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss dd-MM-yyyy");
 	int iter = 0;
@@ -40,13 +42,13 @@ public class MainWithMySQL {
 	public MainWithMySQL()
 	{
 		parameters = new Parameters();
-		myLogs = new MyControls();
+		myLogs = new LocalControls();
 	}
 	
 	public MainWithMySQL(String myIp)
 	{
 		parameters = new Parameters(myIp);
-		myLogs = new MyControls(myIp);
+		myLogs = new LocalControls(myIp);
 	}
 	
 	// login _youtube
@@ -159,7 +161,26 @@ public class MainWithMySQL {
 				driver.findElement(By.xpath("//*[@id=\"watch8-sentiment-actions\"]/span/span[1]/button")).click();
 			}
 		}
-		
+
+		// check_comment
+		boolean checkComment = false;
+		if(!mapLimitComments.containsKey(url))
+		{
+			int temp = Utils.getRandomNumber(0, 1);
+			if(temp==1)
+			{
+				checkComment = true;
+				mapLimitComments.put(url, 1);
+			}
+		} else if(mapLimitComments.get(url)<max_comments)
+		{
+			int temp = Utils.getRandomNumber(0, 1);
+			if(temp==1)
+			{
+				checkComment = true;
+				mapLimitComments.put(url, mapLimitComments.get(url) + 1);
+			}
+		}
 		if(checkComment && driver.findElements(By.className("comment-simplebox-renderer-collapsed-content")).size()>0)
 		{
 			driver.findElement(By.className("comment-simplebox-renderer-collapsed-content")).click();
@@ -195,48 +216,52 @@ public class MainWithMySQL {
 		
 		String targetVideo = parameters.listTargetVideos.get(0);
 		int sizeOtherVideo = parameters.listOtherVideos.size();
-		ArrayList<Integer> listWhenComments = Utils.getListRandomNumbers(parameters.num_times_comment, parameters.num_iteration);
 
 		int times = 0;
 		iter = 0;
-		for(; iter<parameters.num_iteration; iter++)
+		while(true)
 	    {
 			System.out.println("Repeat: " + (++times));
-			
-			// check comment or not
-			if(listWhenComments.contains(iter))
-			{
-				checkComment = true;
-				System.out.println("checkComment = true");
-			} else {
-				checkComment = false;
-				System.out.println("checkComment = false");
-			}
 			
 	    	ArrayList<Integer> listIndexs = Utils.getListRandomNumbers(sizeOtherVideo, sizeOtherVideo);
 	    	for(int i=0; i<listIndexs.size(); i++)
 	    	{
 	    		int index = listIndexs.get(i);
 	    		String otherVideo = parameters.listOtherVideos.get(index);
+	    		
 	    		watchVideo(otherVideo);
+	    		if(myLogs.checkStop()==true)
+	    		{
+	    			break;
+	    		}
+	    		
 	    		watchVideo(targetVideo);
+	    		if(myLogs.checkStop()==true)
+	    		{
+	    			break;
+	    		}
 	    	}
 	    	
+	    	iter++;
 	    	System.out.println();
+	    	
+	    	// check status
+	    	if(myLogs.checkStop()==true)
+	    	{
+	    		driver.close();
+	    		System.out.println("Success!");
+	    		myLogs.saveLog("Success!");
+	    		myLogs.setStatus(0);
+	    		break;
+	    	}
 	    }
-		
-		driver.close();
-		
-		System.out.println("Success!");
-		myLogs.saveLog("Success!");
-		myLogs.setStatus(0);
 	}
 	
 	public static void main(String [] args) throws Exception
 	{
 		while(true)
 		{
-			MainWithMySQL mainObject = new MainWithMySQL("14.162.206.226");
+			MainWithMySQL mainObject = new MainWithMySQL("1.1.1.1");
 			if(mainObject.parameters.username.length()>0)
 			{
 				mainObject.startMain();

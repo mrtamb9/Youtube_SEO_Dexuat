@@ -63,19 +63,15 @@ public class Parameters
 		statement = connect.createStatement();
 
 		try {
-			String query = "SELECT * FROM account_dexuat WHERE id = \'" + myIp + "\';";
+			String query = "SELECT * FROM account_dexuat WHERE ip = \'" + myIp + "\';";
 			resultset = statement.executeQuery(query);
 			if(resultset.next())
 			{
-				String status = resultset.getString("status");
-				if(status.compareTo("1")==0)
+				String running = resultset.getString("running");
+				if(running.compareTo("1")==0)
 				{
-					String value = resultset.getString("value");
-					if(value.split(" ").length==2)
-					{
-						username = value.split(" ")[0];
-						password = value.split(" ")[1];
-					}
+					username = resultset.getString("username").trim();
+					password = resultset.getString("password").trim();
 				}
 			}
 		} catch (SQLException e) {
@@ -96,19 +92,15 @@ public class Parameters
 		statement = connect.createStatement();
 
 		try {
-			String query = "SELECT * FROM account_dexuat WHERE id = \'" + myIp + "\';";
+			String query = "SELECT * FROM account_dexuat WHERE ip = \'" + myIp + "\';";
 			resultset = statement.executeQuery(query);
 			if(resultset.next())
 			{
-				String status = resultset.getString("status");
-				if(status.compareTo("1")==0)
+				String running = resultset.getString("running");
+				if(running.compareTo("1")==0)
 				{
-					String value = resultset.getString("value");
-					if(value.split(" ").length==2)
-					{
-						username = value.split(" ")[0];
-						password = value.split(" ")[1];
-					}
+					username = resultset.getString("username").trim();
+					password = resultset.getString("password").trim();
 				}
 			}
 		} catch (SQLException e) {
@@ -200,7 +192,11 @@ public class Parameters
 	{
 		Parameters parameters = new Parameters();
 		parameters.getAccountFromMySQL("0.0.0.0");
-		parameters.getParameterFromMySQL();
-		parameters.printParameters();
+		if(parameters.username.length()>0)
+		{
+			parameters.getParameterFromMySQL();
+			parameters.printParameters();
+		}
+		System.out.println("Done!");
 	}
 }
