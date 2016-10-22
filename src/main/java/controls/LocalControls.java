@@ -4,12 +4,16 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import database.mysql.ConnectionPool;
 import utils.Utils;
 
 public class LocalControls {
 	
+	DateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	String myIp;
 	
 	public LocalControls() {
@@ -26,6 +30,8 @@ public class LocalControls {
 	
 	public void saveLog(String log) throws Exception
 	{
+		Date now = new Date();
+		
 		Connection connect = null;
 		Statement statement = null;
 		ResultSet resultset = null;
@@ -35,6 +41,8 @@ public class LocalControls {
 		try {
 			String query = "UPDATE account_dexuat SET mylog = '"
 					+ log
+					+ "', update_time = '"
+					+ simpleDateFormat.format(now)
 					+ "' WHERE ip = '"
 					+ myIp
 					+ "';";
@@ -103,6 +111,7 @@ public class LocalControls {
 	public static void main(String [] args) throws Exception
 	{
 		LocalControls control = new LocalControls("0.0.0.0");
-		control.setStatus(0);
+		control.saveLog("no log 4");
+		System.out.println("All done!");
 	}
 }

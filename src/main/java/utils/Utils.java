@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Random;
 
@@ -57,8 +59,59 @@ public class Utils {
         }
     }
 	
+	public static ArrayList<String> sortArrayString(ArrayList<String> originList)
+	{
+		if(originList==null)
+		{
+			return new ArrayList<>();
+		}
+		String [] arrayString = new String[originList.size()];
+		for(int i=0; i<originList.size(); i++)
+		{
+			arrayString[i] = originList.get(i);
+		}
+		
+		for(int i=0; i<arrayString.length-1; i++)
+		{
+			for(int j=i+1; j<arrayString.length; j++)
+			{
+				if(arrayString[i].compareTo(arrayString[j])>0)
+				{
+					String tempString = arrayString[i];
+					arrayString[i] = arrayString[j];
+					arrayString[j] = tempString;
+				}
+			}
+		}
+		
+		ArrayList<String> sortedList = new ArrayList<>();
+		for(int i=0; i<arrayString.length; i++)
+		{
+			sortedList.add(arrayString[i]);
+		}
+		
+		return sortedList;
+	}
+	
+	public static Date getOutOfTimeFromNow()
+	{
+		Date currentDate = new Date();
+		Calendar c = Calendar.getInstance();
+		c.setTime(currentDate);
+		c.add(Calendar.MINUTE, -30); 
+		Date minDate = c.getTime(); 
+		return minDate;
+	}
+	
+	public static String normalizeText(String text)
+	{
+		text = text.replace("\"", "\\\"");
+		text = text.replace("\'", "\\\'");
+		return text;
+	}
+	
 	public static void main(String [] args) throws Exception
 	{
-		System.out.println(getRandomNumber(0, 1));
+		System.out.println(getRandomNumber(12, 12));
 	}
 }
