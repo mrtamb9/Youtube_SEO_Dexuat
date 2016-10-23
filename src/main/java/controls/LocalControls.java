@@ -68,6 +68,7 @@ public class LocalControls {
 					+ " WHERE ip = '"
 					+ myIp
 					+ "';";
+			System.out.println(query);
 			statement.executeUpdate(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -106,6 +107,25 @@ public class LocalControls {
 		ConnectionPool.closeConnection(resultset, statement, connect);
 		
 		return check;
+	}
+	
+	public static void insertAccount(String ip, String username, String password) throws Exception {
+		Connection connect = null;
+		Statement statement = null;
+		ResultSet resultset = null;
+		connect = ConnectionPool.getConnection();
+		statement = connect.createStatement();
+
+		try {
+			String query = "INSERT INTO account_dexuat (ip, username, password, running, mylog) VALUES ('" + ip + "', '"
+					+ username + "', '" + password + "', 0, 'starting...') ON DUPLICATE KEY UPDATE running=0, mylog='starting...';";
+			System.out.println(query);
+			statement.executeUpdate(query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		ConnectionPool.closeConnection(resultset, statement, connect);
 	}
 	
 	public static void main(String [] args) throws Exception

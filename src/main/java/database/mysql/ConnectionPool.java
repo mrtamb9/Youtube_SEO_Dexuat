@@ -58,12 +58,19 @@ public class ConnectionPool
 	}
 
 	public static Connection getConnection() throws SQLException {
-		initPool();
+		// initPool(); // Nguy hiem: se lam tang thread_connection moi lan truy van
 		try {
 			return ds.getConnection();
 		} catch (Exception e) {
 			initPool();
 			return ds.getConnection();
 		}
+	}
+	
+	public static void main(String [] args) throws SQLException
+	{
+		long start = System.currentTimeMillis();
+		getConnection();
+		System.out.println(System.currentTimeMillis() - start);
 	}
 }

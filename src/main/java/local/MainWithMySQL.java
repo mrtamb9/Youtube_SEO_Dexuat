@@ -265,33 +265,27 @@ public class MainWithMySQL {
 	
 	public static void main(String [] args) throws Exception
 	{
+		String myIp = Utils.getIp();
 		if(args.length>0)
 		{
-			while(true)
+			myIp = args[0];
+		} 
+
+		LocalControls.insertAccount(myIp, "", "no-username     no-password");
+		
+		int count = 0;
+		while(true)
+		{
+			System.out.println(++count);
+			MainWithMySQL mainObject = new MainWithMySQL(myIp);
+			if(mainObject.parameters.username.length()>0)
 			{
-				MainWithMySQL mainObject = new MainWithMySQL(args[0]);
-				if(mainObject.parameters.username.length()>0)
-				{
-					mainObject.startMain();
-				}
-				
-				System.out.println(args[0] + " waiting 1s util status = 1");
-				Thread.sleep(1000);
-				mainObject.myLogs.saveLog(simpleDateFormat.format(new Date()) + " waiting... ");
+				mainObject.startMain();
 			}
-		} else {
-			while(true)
-			{
-				MainWithMySQL mainObject = new MainWithMySQL();
-				if(mainObject.parameters.username.length()>0)
-				{
-					mainObject.startMain();
-				}
-				
-				System.out.println("waiting 1s util status = 1");
-				Thread.sleep(1000);
-				mainObject.myLogs.saveLog(simpleDateFormat.format(new Date()) + " waiting... ");
-			}
+			
+			System.out.println(myIp + " waiting 1s util status = 1");
+			Thread.sleep(1000);
+			mainObject.myLogs.saveLog(simpleDateFormat.format(new Date()) + " waiting... ");
 		}
 	}
 }

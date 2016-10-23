@@ -118,7 +118,7 @@ public class InterfaceStatusVps extends JFrame {
 					}
 				}
 				
-				Thread.sleep(1000);
+				Thread.sleep(5000);
 			} catch (Exception e) {
 				System.out.println("Error thread load all ip!");
 			}

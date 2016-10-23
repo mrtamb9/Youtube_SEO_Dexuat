@@ -57,6 +57,7 @@ public class ServerControls {
 			String query = "INSERT INTO account_dexuat (ip, username, password, running, mylog) VALUES ('" + ip + "', '"
 					+ username + "', '" + password + "', 0, 'no log') ON DUPLICATE KEY UPDATE username='" + username
 					+ "', password='" + password + "', running=0, mylog='log';";
+			System.out.println(query);
 			statement.executeUpdate(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -84,6 +85,7 @@ public class ServerControls {
 
 		try {
 			String query = "SELECT * FROM account_dexuat;";
+			System.out.println(query);
 			resultset = statement.executeQuery(query);
 			while (resultset.next()) {
 				String ip = resultset.getString("ip");
@@ -129,6 +131,7 @@ public class ServerControls {
 
 		try {
 			String query = "DELETE FROM account_dexuat WHERE ip = '" + ip + "';";
+			System.out.println(query);
 			statement.executeUpdate(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -179,6 +182,7 @@ public class ServerControls {
 		
 		try {
 			String query = "SELECT * FROM parameters_dexuat;";
+			System.out.println(query);
 			resultset = statement.executeQuery(query);
 			while(resultset.next())
 			{
