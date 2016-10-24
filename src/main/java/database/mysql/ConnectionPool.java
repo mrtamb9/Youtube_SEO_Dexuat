@@ -69,8 +69,11 @@ public class ConnectionPool
 	
 	public static void main(String [] args) throws SQLException
 	{
-		long start = System.currentTimeMillis();
-		getConnection();
-		System.out.println(System.currentTimeMillis() - start);
+		while(true)
+		{
+			long start = System.currentTimeMillis();
+			getConnection();
+			System.out.println(System.currentTimeMillis() - start);
+		}
 	}
 }

@@ -108,7 +108,7 @@ public class ServerControls {
 
 				String tempString = ip + "     " + username + "     " + status + "     " + mylog;
 				listInfos.add(tempString);
-				if (updateTime == null || updateTime.before(outOfTime)) {
+				if (updateTime == null || updateTime.before(outOfTime) || username.length()==0) {
 					listWarning.add(tempString);
 				}
 			}

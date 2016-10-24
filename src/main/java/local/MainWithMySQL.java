@@ -271,7 +271,7 @@ public class MainWithMySQL {
 			myIp = args[0];
 		} 
 
-		LocalControls.insertAccount(myIp, "", "no-username     no-password");
+		LocalControls.insertAccount(myIp, "", "");
 		
 		int count = 0;
 		while(true)
